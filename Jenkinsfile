@@ -1,5 +1,4 @@
 
-
 pipeline {
     agent any
 
@@ -10,16 +9,15 @@ pipeline {
             }
         }
 
-        stage('Check Environment') {
+        stage('Run Python Tests') {
             steps {
-                sh 'java -version'
-                sh 'git --version'
-            }
-        }
-
-        stage('Run Tests') {
-            steps {
-                echo 'Next, we will configure Python testing for this Linux-based Jenkins container.'
+                sh '''
+                    docker run --rm \
+                      -v "$PWD:/app" \
+                      -w /app \
+                      python:3.12-slim \
+                      sh -c "pip install --quiet -r requirements.txt && python -m unittest -v test_app.py"
+                '''
             }
         }
     }
