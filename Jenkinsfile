@@ -9,16 +9,32 @@ pipeline {
             }
         }
 
-        stage('Run Python Tests') {
+        stage('Python Tests') {
             steps {
                 sh '''
-                    docker run --rm \
-                      -v "$PWD:/app" \
-                      -w /app \
-                      python:3.12-slim \
-                      sh -c "pip install --quiet -r requirements.txt && python -m unittest -v test_app.py"
+                    python3 -m venv .venv
+                    . .venv/bin/activate
+                    pip install -r requirements.txt
+                    python -m unittest -v test_app.py
                 '''
             }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh '''
+                    docker build -t devops-demo:${BUILD_NUMBER} .
+                '''
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Pipeline completed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed. Check the Console Output.'
         }
     }
 }
