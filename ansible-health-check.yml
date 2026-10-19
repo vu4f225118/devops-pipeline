@@ -1,0 +1,22 @@
+
+---
+- name: Check Flask application health
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  tasks:
+    - name: Check application health endpoint
+      ansible.builtin.uri:
+        url: http://host.docker.internal:5000/health
+        method: GET
+        status_code: 200
+        return_content: true
+      register: app_health
+
+    - name: Verify application status
+      ansible.builtin.assert:
+        that:
+          - app_health.json.status == "healthy"
+          - app_health.json.application == "devops-pipeline"
+        success_msg: "Flask application health check passed."
